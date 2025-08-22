@@ -34,7 +34,7 @@
 
     <main class="hidden">
         <!-- Tutte le sezioni esistenti -->
-        <!-- ... (le tue sezioni dashboard, inventory, item-detail, add-item, loan-form-section, maintenance-form-section) ... -->
+        <!-- ... -->
 
         <section id="loan-form-section" style="display: none;">
             <h2>Registra Prestito</h2>
@@ -57,10 +57,12 @@
             <!-- ...contenuto esistente... -->
         </section>
 
-        <!-- ✅ Nuova sezione Prestiti Attivi -->
+        <!-- ✅ Sezione Prestiti Attivi aggiornata -->
         <section id="loans" style="display: none;">
             <h2>Prestiti Attivi</h2>
-            <div class="loan-list-container"></div>
+            <div id="loan-list" class="loan-list-container">
+                <!-- I prestiti verranno mostrati qui -->
+            </div>
             <p class="no-loans-message" style="display: none;">Non ci sono articoli in prestito.</p>
         </section>
 
