@@ -1,5 +1,3 @@
-let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
-
 document.addEventListener('DOMContentLoaded', () => {
     // Funzione per salvare i dati nel Local Storage
     function saveToLocalStorage(key, data) {
@@ -517,10 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loanReturnDateInput.value = '';
         showSection('loan-form-section');
     }
-document.querySelector('[data-section="loans"]').addEventListener("click", function () {
-    showSection("loans");
-    renderLoanList();
-});
 
     function recordLoan() {
         const person = loanPersonName.value;
@@ -576,35 +570,6 @@ document.querySelector('[data-section="loans"]').addEventListener("click", funct
             noLoansMessage.style.display = 'block';
         }
     }
-function renderLoanList() {
-    const loanListContainer = document.getElementById("loan-list");
-    const noLoansMessage = document.querySelector(".no-loans-message");
-    loanListContainer.innerHTML = "";
-
-    const loans = inventory.filter(item => item.status === "in prestito");
-
-    if (loans.length === 0) {
-        noLoansMessage.style.display = "block";
-        return;
-    }
-
-    noLoansMessage.style.display = "none";
-
-    loans.forEach(item => {
-        const loanCard = document.createElement("div");
-        loanCard.className = "loan-card";
-
-        loanCard.innerHTML = `
-            <h3>${item.name}</h3>
-            <p><strong>Seriale:</strong> ${item.serial}</p>
-            <p><strong>Prestato a:</strong> ${item.loanedTo}</p>
-            <p><strong>Data di ritorno prevista:</strong> ${item.returnDate}</p>
-            <button class="btn-return" data-serial="${item.serial}">Segna come restituito</button>
-        `;
-
-        loanListContainer.appendChild(loanCard);
-    });
-}
 
     // Funzione per la gestione delle manutenzioni
     function renderMaintenanceHistory(item) {
@@ -1255,114 +1220,4 @@ function renderLoanList() {
     updateDashboardStats();
     checkMaintenanceAlerts();
     populateSupplierSelect();
-});
-// ==========================
-// LOGICA SEZIONE PRESTITI
-// ==========================
-
-function renderLoanList() {
-    const loanListContainer = document.getElementById('loan-list');
-    loanListContainer.innerHTML = '';
-
-    const loans = JSON.parse(localStorage.getItem('loans')) || [];
-
-    if (loans.length === 0) {
-        const noLoansMessage = document.createElement('p');
-        noLoansMessage.className = 'no-loans-message';
-        noLoansMessage.textContent = 'Nessun prestito attivo.';
-        loanListContainer.appendChild(noLoansMessage);
-        return;
-    }
-
-    loans.forEach((loan, index) => {
-        const card = document.createElement('div');
-        card.className = 'loan-card';
-
-        card.innerHTML = `
-            <h3>${loan.bookTitle}</h3>
-            <p><strong>Autore:</strong> ${loan.bookAuthor}</p>
-            <p><strong>Utente:</strong> ${loan.userName}</p>
-            <button class="btn-return">Restituisci</button>
-        `;
-
-        const returnBtn = card.querySelector('.btn-return');
-        returnBtn.addEventListener('click', () => {
-            loans.splice(index, 1);
-            localStorage.setItem('loans', JSON.stringify(loans));
-            renderLoanList();
-        });
-
-        loanListContainer.appendChild(card);
-    });
-}
-
-// Esegui il rendering all'avvio
-renderLoanList();
-// Funzione per mostrare i prestiti attivi
-function renderLoanList() {
-    const loanListContainer = document.getElementById("loan-list");
-    const noLoansMessage = document.querySelector(".no-loans-message");
-    loanListContainer.innerHTML = "";
-
-    const loans = inventory.filter(item => item.status === "in prestito");
-
-    if (loans.length === 0) {
-        noLoansMessage.style.display = "block";
-        return;
-    }
-
-    noLoansMessage.style.display = "none";
-
-    loans.forEach(item => {
-        const loanCard = document.createElement("div");
-        loanCard.className = "loan-card";
-
-        loanCard.innerHTML = `
-            <h3>${item.name}</h3>
-            <p><strong>Seriale:</strong> ${item.serial}</p>
-            <p><strong>Prestato a:</strong> ${item.loanedTo}</p>
-            <p><strong>Data di ritorno prevista:</strong> ${item.returnDate}</p>
-            <button class="btn-return" data-serial="${item.serial}">Segna come restituito</button>
-        `;
-
-        loanListContainer.appendChild(loanCard);
-    });
-}
-
-// Gestione click su "Segna come restituito"
-document.addEventListener("click", function (e) {
-    if (e.target.classList.contains("btn-return")) {
-        const serial = e.target.getAttribute("data-serial");
-        const item = inventory.find(i => i.serial === serial);
-
-        if (item) {
-            item.status = "disponibile";
-            item.loanedTo = "";
-            item.returnDate = "";
-            saveInventory();
-            renderLoanList();
-            alert("Articolo restituito correttamente.");
-        }
-    }
-});
-
-// Mostra la sezione prestiti quando viene cliccata
-document.querySelector('[data-section="loans"]').addEventListener("click", function () {
-    showSection("loans");
-    renderLoanList();
-});
-document.addEventListener("click", function (e) {
-    if (e.target.classList.contains("btn-return")) {
-        const serial = e.target.getAttribute("data-serial");
-        const item = inventory.find(i => i.serial === serial);
-
-        if (item) {
-            item.status = "disponibile";
-            item.loanedTo = "";
-            item.returnDate = "";
-            localStorage.setItem("inventory", JSON.stringify(inventory));
-            renderLoanList();
-            alert("Articolo restituito correttamente.");
-        }
-    }
 });
