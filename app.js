@@ -1221,3 +1221,45 @@ document.addEventListener('DOMContentLoaded', () => {
     checkMaintenanceAlerts();
     populateSupplierSelect();
 });
+// ==========================
+// LOGICA SEZIONE PRESTITI
+// ==========================
+
+function renderLoanList() {
+    const loanListContainer = document.getElementById('loan-list');
+    loanListContainer.innerHTML = '';
+
+    const loans = JSON.parse(localStorage.getItem('loans')) || [];
+
+    if (loans.length === 0) {
+        const noLoansMessage = document.createElement('p');
+        noLoansMessage.className = 'no-loans-message';
+        noLoansMessage.textContent = 'Nessun prestito attivo.';
+        loanListContainer.appendChild(noLoansMessage);
+        return;
+    }
+
+    loans.forEach((loan, index) => {
+        const card = document.createElement('div');
+        card.className = 'loan-card';
+
+        card.innerHTML = `
+            <h3>${loan.bookTitle}</h3>
+            <p><strong>Autore:</strong> ${loan.bookAuthor}</p>
+            <p><strong>Utente:</strong> ${loan.userName}</p>
+            <button class="btn-return">Restituisci</button>
+        `;
+
+        const returnBtn = card.querySelector('.btn-return');
+        returnBtn.addEventListener('click', () => {
+            loans.splice(index, 1);
+            localStorage.setItem('loans', JSON.stringify(loans));
+            renderLoanList();
+        });
+
+        loanListContainer.appendChild(card);
+    });
+}
+
+// Esegui il rendering all'avvio
+renderLoanList();
