@@ -1263,3 +1263,56 @@ function renderLoanList() {
 
 // Esegui il rendering all'avvio
 renderLoanList();
+// Funzione per mostrare i prestiti attivi
+function renderLoanList() {
+    const loanListContainer = document.getElementById("loan-list");
+    const noLoansMessage = document.querySelector(".no-loans-message");
+    loanListContainer.innerHTML = "";
+
+    const loans = inventory.filter(item => item.status === "in prestito");
+
+    if (loans.length === 0) {
+        noLoansMessage.style.display = "block";
+        return;
+    }
+
+    noLoansMessage.style.display = "none";
+
+    loans.forEach(item => {
+        const loanCard = document.createElement("div");
+        loanCard.className = "loan-card";
+
+        loanCard.innerHTML = `
+            <h3>${item.name}</h3>
+            <p><strong>Seriale:</strong> ${item.serial}</p>
+            <p><strong>Prestato a:</strong> ${item.loanedTo}</p>
+            <p><strong>Data di ritorno prevista:</strong> ${item.returnDate}</p>
+            <button class="btn-return" data-serial="${item.serial}">Segna come restituito</button>
+        `;
+
+        loanListContainer.appendChild(loanCard);
+    });
+}
+
+// Gestione click su "Segna come restituito"
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("btn-return")) {
+        const serial = e.target.getAttribute("data-serial");
+        const item = inventory.find(i => i.serial === serial);
+
+        if (item) {
+            item.status = "disponibile";
+            item.loanedTo = "";
+            item.returnDate = "";
+            saveInventory();
+            renderLoanList();
+            alert("Articolo restituito correttamente.");
+        }
+    }
+});
+
+// Mostra la sezione prestiti quando viene cliccata
+document.querySelector('[data-section="loans"]').addEventListener("click", function () {
+    showSection("loans");
+    renderLoanList();
+});
