@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Aziendale</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <section id="login-screen">
+        <div class="login-container">
+            <h2>Accesso Inventario</h2>
+            <form id="login-form">
+                <input type="password" id="password" placeholder="Inserisci la password" required>
+                <button type="submit">Accedi</button>
+            </form>
+        </div>
+    </section>
+
+    <header class="hidden">
+        <nav>
+            <ul>
+                <li><a href="#" data-section="dashboard">Dashboard</a></li>
+                <li><a href="#" data-section="inventory">Inventario</a></li>
+                <li><a href="#" data-section="add-item">Aggiungi Articolo</a></li>
+                <li><a href="#" data-section="loans">Prestiti</a></li>
+                <li><a href="#" data-section="suppliers">Fornitori</a></li>
+                <li><a href="#" data-section="reports">Report</a></li>
+            </ul>
+        </nav>
+        <button id="export-csv-btn" class="btn">Esporta in CSV</button>
+    </header>
+
+    <main class="hidden">
+        <section id="dashboard" style="display: none;">
+            <h2>Dashboard</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Totale Articoli</h3>
+                    <p id="total-count">0</p>
+                </div>
+                <div class="stat-card available">
+                    <h3>Disponibili</h3>
+                    <p id="available-count">0</p>
+                </div>
+                <div class="stat-card in-use">
+                    <h3>In Uso</h3>
+                    <p id="in-use-count">0</p>
+                </div>
+                <div class="stat-card maintenance">
+                    <h3>In Manutenzione</h3>
+                    <p id="maintenance-count">0</p>
+                </div>
+                <div class="stat-card faulty">
+                    <h3>Non Funzionanti</h3>
+                    <p id="faulty-count">0</p>
+                </div>
+            </div>
+            <div class="dashboard-quick-links">
+                <button class="quick-link" data-section="inventory" data-filter-status="Disponibile">Vedi Disponibili</button>
+                <button class="quick-link" data-section="add-item">Aggiungi Nuovo</button>
+            </div>
+            <div id="maintenance-alerts" class="maintenance-alerts" style="display: none;">
+                <h3><i class="fas fa-exclamation-triangle"></i> Prossime Manutenzioni Scadenza:</h3>
+                <ul id="maintenance-alerts-list"></ul>
+            </div>
+        </section>
+
+        <section id="inventory" style="display: none;">
+            <h2>Inventario</h2>
+            <div class="controls">
+                <input type="text" id="search-input" placeholder="Cerca per nome, seriale o categoria...">
+                <select id="status-filter">
+                    <option value="all">Tutti gli stati</option>
+                    <option value="Disponibile">Disponibile</option>
+                    <option value="In Uso">In Uso</option>
+                    <option value="In Manutenzione">In Manutenzione</option>
+                    <option value="Non Funzionante">Non Funzionante</option>
+                </select>
+            </div>
+            <div class="item-list"></div>
+        </section>
+
+        <section id="item-detail" style="display: none;">
+            <div class="detail-container">
+                <button id="back-to-inventory-btn" class="btn-back">← Torna all'inventario</button>
+                <h2 id="detail-name"></h2>
+                <div class="detail-main-content">
+                    <img id="detail-image" src="" alt="Immagine articolo" class="detail-image">
+                    <div class="detail-info">
+                        <p><strong>Seriale:</strong> <span id="detail-serial"></span></p>
+                        <p><strong>Categoria:</strong> <span id="detail-category"></span></p>
+                        <p><strong>Stato:</strong> <span id="detail-status"></span></p>
+                        <p><strong>Posizione:</strong> <span id="detail-location"></span></p>
+                        <div id="loan-info-container" class="hidden">
+                            <p><strong>Prestato a:</strong> <span id="loan-person"></span></p>
+                            <p><strong>Ritorno previsto:</strong> <span id="loan-return-date"></span></p>
+                        </div>
+                        <div id="detail-attachment-container" style="display: none;">
+                            <p><strong>Documento Allegato:</strong> <a id="detail-attachment" href="#" target="_blank"><span id="attachment-label"></span></a></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="detail-notes-container" class="detail-notes-container" style="display: none;">
+                    <h3>Note:</h3>
+                    <p id="detail-notes"></p>
+                </div>
+                <div id="detail-actions" class="detail-actions"></div>
+
+                <div id="maintenance-history">
+                    <h3>Storico Manutenzioni</h3>
+                    <div class="maintenance-history-controls">
+                        <input type="text" id="maintenance-filter-company" placeholder="Filtra per azienda...">
+                        <select id="maintenance-filter-rating">
+                            <option value="all">Tutti i rating</option>
+                            <option value="1">1 stella</option>
+                            <option value="2">2 stelle</option>
+                            <option value="3">3 stelle</option>
+                            <option value="4">4 stelle</option>
+                            <option value="5">5 stelle</option>
+                        </select>
+                    </div>
+                    <div id="maintenance-list" class="maintenance-list"></div>
+                    <button id="add-maintenance-btn" class="btn-add">Aggiungi Intervento</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="add-item" style="display: none;">
+            <h2><span id="form-title">Aggiungi un Nuovo Articolo</span></h2>
+            <form id="item-form">
+                <label for="item-name">Nome Articolo:</label>
+                <input type="text" id="item-name" required>
+
+                <label for="item-serial">Numero Seriale:</label>
+                <input type="text" id="item-serial" required>
+
+                <label for="item-category">Categoria:</label>
+                <select id="item-category" required>
+                    <option value="Telecamere">Telecamere</option>
+                    <option value="Ottiche">Ottiche</option>
+                    <option value="Mixer Video">Mixer Video</option>
+                    <option value="Cavi Video">Cavi Video</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Luci">Luci</option>
+                    <option value="Accessori">Accessori</option>
+                    <option value="Altro">Altro</option>
+                </select>
+
+                <label for="item-status">Stato:</label>
+                <select id="item-status" required>
+                    <option value="Disponibile">Disponibile</option>
+                    <option value="In Uso">In Uso</option>
+                    <option value="In Manutenzione">In Manutenzione</option>
+                    <option value="Non Funzionante">Non Funzionante</option>
+                </select>
+
+                <label for="item-location">Posizione:</label>
+                <input type="text" id="item-location" required>
+
+                <label for="item-notes">Note:</label>
+                <textarea id="item-notes"></textarea>
+
+                <label for="item-image">Immagine (opzionale):</label>
+                <input type="file" id="item-image" accept="image/*">
+                <img id="image-preview" class="image-preview" style="display: none;">
+
+                <label for="item-attachment">Allegato (opzionale):</label>
+                <input type="file" id="item-attachment">
+                <span id="attachment-name" class="attachment-name" style="display: none;"></span>
+
+                <button type="submit" class="btn-submit">Salva Articolo</button>
+            </form>
+        </section>
+
+        <section id="loan-form-section" style="display: none;">
+            <h2>Registra Prestito</h2>
+            <form id="loan-form">
+                <p><strong>Articolo:</strong> <span id="loan-item-name"></span></p>
+                <p><strong>Seriale:</strong> <span id="loan-item-serial"></span></p>
+                
+                <label for="loan-person-name">Prestato a:</label>
+                <input type="text" id="loan-person-name" required>
+
+                <label for="loan-return-date-input">Data di Ritorno Prevista:</label>
+                <input type="date" id="loan-return-date-input" required>
+
+                <button type="submit" class="btn-submit">Conferma Prestito</button>
+                <button type="button" id="cancel-loan-btn" class="btn-back">Annulla</button>
+            </form>
+        </section>
+
+        <section id="maintenance-form-section" style="display: none;">
+            <h2>Aggiungi Intervento di Manutenzione</h2>
+            <form id="maintenance-form">
+                <p><strong>Articolo:</strong> <span id="maintenance-item-name"></span></p>
+                <p><strong>Seriale:</strong> <span id="maintenance-item-serial"></span></p>
+
+                <label for="maintenance-date">Data Intervento:</label>
+                <input type="date" id="maintenance-date" required>
+
+                <label for="maintenance-due-date">Data Scadenza Manutenzione (opzionale):</label>
+                <input type="date" id="maintenance-due-date">
+
+                <label for="maintenance-description">Descrizione:</label>
+                <textarea id="maintenance-description" required></textarea>
+                
+                <label for="maintenance-executed-by">Eseguito da (Azienda/Laboratorio):</label>
+                <select id="maintenance-executed-by">
+                    <option value="">Seleziona un fornitore...</option>
+                </select>
+
+                <label for="maintenance-cost">Costo (€):</label>
+                <input type="number" id="maintenance-cost" step="0.01">
+                
+                <label for="maintenance-rating">Valutazione (1-5):</label>
+                <input type="number" id="maintenance-rating" min="1" max="5">
+
+                <label for="maintenance-attachment">Allegato (opzionale):</label>
+                <input type="file" id="maintenance-attachment">
+                <span id="maintenance-attachment-name" class="attachment-name" style="display: none;"></span>
+                
+                <div class="form-check">
+                    <input type="checkbox" id="send-email-reminder">
+                    <label for="send-email-reminder">Invia promemoria email al fornitore 30 giorni prima della scadenza</label>
+                </div>
+                <button type="submit" class="btn-submit">Salva Intervento</button>
+                <button type="button" id="cancel-maintenance-btn" class="btn-back">Annulla</button>
+            </form>
+        </section>
+        
+        <section id="loans" style="display: none;">
+            <h2>Prestiti Attivi</h2>
+            <div class="loan-list-container"></div>
+            <p class="no-loans-message" style="display: none;">Non ci sono articoli in prestito.</p>
+        </section>
+
+        <section id="suppliers" style="display: none;">
+            <h2>Gestione Fornitori</h2>
+            <div class="supplier-actions">
+                <button id="add-supplier-btn" class="btn-add">Aggiungi Nuovo Fornitore</button>
+            </div>
+            <div id="supplier-list-container" class="supplier-list-container"></div>
+            <div id="supplier-form-container" style="display: none;">
+                <h3><span id="supplier-form-title">Aggiungi Fornitore</span></h3>
+                <form id="supplier-form">
+                    <input type="hidden" id="supplier-id">
+                    <label for="supplier-name">Nome Fornitore:</label>
+                    <input type="text" id="supplier-name" required>
+                    <label for="supplier-contact">Contatto Email/Telefono:</label>
+                    <input type="text" id="supplier-contact" required>
+                    <label for="supplier-notes">Note:</label>
+                    <textarea id="supplier-notes"></textarea>
+                    <button type="submit" class="btn-submit">Salva Fornitore</button>
+                    <button type="button" id="cancel-supplier-btn" class="btn-back">Annulla</button>
+                </form>
+            </div>
+        </section>
+        
+        <section id="reports" style="display: none;">
+            <h2>Report e Statistiche</h2>
+            <div class="report-container">
+                <div class="chart-card">
+                    <h3>Distribuzione per Stato</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Distribuzione per Categoria</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            <div class="custom-reports-section">
+                <h3>Genera Report Personalizzato</h3>
+                <form id="custom-report-form">
+                    <div class="custom-report-controls">
+                        <div>
+                            <label for="report-start-date">Data Inizio:</label>
+                            <input type="date" id="report-start-date">
+                        </div>
+                        <div>
+                            <label for="report-end-date">Data Fine:</label>
+                            <input type="date" id="report-end-date">
+                        </div>
+                        <div>
+                            <label for="report-status">Stato Articolo:</label>
+                            <select id="report-status">
+                                <option value="all">Tutti gli stati</option>
+                                <option value="Disponibile">Disponibile</option>
+                                <option value="In Uso">In Uso</option>
+                                <option value="In Manutenzione">In Manutenzione</option>
+                                <option value="Non Funzionante">Non Funzionante</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="report-category">Categoria:</label>
+                            <select id="report-category">
+                                <option value="all">Tutte le categorie</option>
+                                <option value="Telecamere">Telecamere</option>
+                                <option value="Ottiche">Ottiche</option>
+                                <option value="Mixer Video">Mixer Video</option>
+                                <option value="Cavi Video">Cavi Video</option>
+                                <option value="Audio">Audio</option>
+                                <option value="Luci">Luci</option>
+                                <option value="Accessori">Accessori</option>
+                                <option value="Altro">Altro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Genera Report</button>
+                </form>
+                <div id="custom-report-output" style="display: none;">
+                    <h4>Risultati del Report</h4>
+                    <p id="report-summary"></p>
+                    <div id="report-list" class="report-list"></div>
+                    <button id="export-custom-report-csv-btn" class="btn-add" style="margin-top: 1rem;">Esporta Report in CSV</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="hidden">
+        <p>&copy; 2024 Inventario Aziendale. Tutti i diritti riservati.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</body>
+</html>
