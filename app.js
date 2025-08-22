@@ -1,3 +1,5 @@
+let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+
 document.addEventListener('DOMContentLoaded', () => {
     // Funzione per salvare i dati nel Local Storage
     function saveToLocalStorage(key, data) {
@@ -515,6 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loanReturnDateInput.value = '';
         showSection('loan-form-section');
     }
+document.querySelector('[data-section="loans"]').addEventListener("click", function () {
+    showSection("loans");
+    renderLoanList();
+});
 
     function recordLoan() {
         const person = loanPersonName.value;
@@ -570,6 +576,35 @@ document.addEventListener('DOMContentLoaded', () => {
             noLoansMessage.style.display = 'block';
         }
     }
+function renderLoanList() {
+    const loanListContainer = document.getElementById("loan-list");
+    const noLoansMessage = document.querySelector(".no-loans-message");
+    loanListContainer.innerHTML = "";
+
+    const loans = inventory.filter(item => item.status === "in prestito");
+
+    if (loans.length === 0) {
+        noLoansMessage.style.display = "block";
+        return;
+    }
+
+    noLoansMessage.style.display = "none";
+
+    loans.forEach(item => {
+        const loanCard = document.createElement("div");
+        loanCard.className = "loan-card";
+
+        loanCard.innerHTML = `
+            <h3>${item.name}</h3>
+            <p><strong>Seriale:</strong> ${item.serial}</p>
+            <p><strong>Prestato a:</strong> ${item.loanedTo}</p>
+            <p><strong>Data di ritorno prevista:</strong> ${item.returnDate}</p>
+            <button class="btn-return" data-serial="${item.serial}">Segna come restituito</button>
+        `;
+
+        loanListContainer.appendChild(loanCard);
+    });
+}
 
     // Funzione per la gestione delle manutenzioni
     function renderMaintenanceHistory(item) {
@@ -1315,4 +1350,19 @@ document.addEventListener("click", function (e) {
 document.querySelector('[data-section="loans"]').addEventListener("click", function () {
     showSection("loans");
     renderLoanList();
+});
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("btn-return")) {
+        const serial = e.target.getAttribute("data-serial");
+        const item = inventory.find(i => i.serial === serial);
+
+        if (item) {
+            item.status = "disponibile";
+            item.loanedTo = "";
+            item.returnDate = "";
+            localStorage.setItem("inventory", JSON.stringify(inventory));
+            renderLoanList();
+            alert("Articolo restituito correttamente.");
+        }
+    }
 });
